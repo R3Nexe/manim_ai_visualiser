@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Outputs (generated video clips)
+outputs/
+
+# Manim cache
+media/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter (if used for prototyping)
+.ipynb_checkpoints/
