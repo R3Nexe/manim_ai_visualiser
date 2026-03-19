@@ -1,0 +1,20 @@
+# Streamlit UI
+streamlit>=1.35.0
+
+# LLM client (talks to LM Studio's OpenAI-compatible endpoint)
+openai>=1.30.0
+
+# Embeddings
+sentence-transformers>=3.0.0
+
+# Supabase (vector store)
+supabase>=2.4.0
+
+# Manim animation engine
+manim>=0.18.0
+
+# FFmpeg Python wrapper
+ffmpeg-python>=0.2.0
+
+# Environment variables
+python-dotenv>=1.0.0
