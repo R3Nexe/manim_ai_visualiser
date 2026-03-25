@@ -18,3 +18,8 @@ ffmpeg-python>=0.2.0
 
 # Environment variables
 python-dotenv>=1.0.0
+
+requests
+
+anthropic
+google-genai
