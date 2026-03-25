@@ -10,7 +10,7 @@ from agents.llm_client import call_llm
 
 SYSTEM_PROMPT = (Path(__file__).parent / "prompts" / "coder_system.txt").read_text()
 MAX_TRIES = 3
-
+USE_KNOWLEDGE_BASE = True
 
 
 def generate_manim_script(scene_plan: list[dict], kb_context: str = "") -> str:
@@ -19,6 +19,13 @@ def generate_manim_script(scene_plan: list[dict], kb_context: str = "") -> str:
     with one AnimationScene class whose construct() plays all scenes sequentially.
     Uses a self-healing loop on syntax failure (up to MAX_TRIES).
     """
+
+    if USE_KNOWLEDGE_BASE and not kb_context:
+        from knowledge_base.retriever import retrieve_examples
+        query = " ".join(s.get("animation_description", s.get("title", "")) for s in scene_plan)
+        kb_context = retrieve_examples(query)
+        if kb_context:
+            print("[coder] KB context retrieved")
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
