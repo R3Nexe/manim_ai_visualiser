@@ -13,7 +13,7 @@ MAX_TRIES = 3
 USE_KNOWLEDGE_BASE = True
 
 
-def generate_manim_script(scene_plan: list[dict], kb_context: str = "") -> str:
+def generate_manim_script(scene_plan: str, kb_context: str = "") -> str:
     """
     Given the scene plan from the prompt expander, generate a single Manim Python file
     with one AnimationScene class whose construct() plays all scenes sequentially.
@@ -22,7 +22,7 @@ def generate_manim_script(scene_plan: list[dict], kb_context: str = "") -> str:
 
     if USE_KNOWLEDGE_BASE and not kb_context:
         from knowledge_base.retriever import retrieve_examples
-        query = " ".join(s.get("animation_description", s.get("title", "")) for s in scene_plan)
+        query = " ".join(s[:100] for s in scene_plan)
         kb_context = retrieve_examples(query)
         if kb_context:
             print("[coder] KB context retrieved")
