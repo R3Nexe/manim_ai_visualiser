@@ -1,5 +1,10 @@
 from manim import *
-
+"""
+TITLE: Kadane's Algorithm — Maximum Subarray Sum (Linear Pass)
+CONCEPTS: kadane's algorithm, dynamic programming, maximum subarray, sliding window, contiguous subarray, global maximum, local maximum, time complexity
+VISUAL_ELEMENTS: Square, Text, Arrow, Line, SurroundingRectangle, VGroup, ReplacementTransform, Indicate, MathTex, Code
+DIFFICULTY: intermediate
+"""
 class KadanesAlgorithm(Scene):
     def construct(self):
         # ==========================================

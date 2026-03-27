@@ -1,6 +1,10 @@
 from manim import *
-
-
+"""
+TITLE: CPU Instruction Cycle — Fetch-Decode-Execute Pipeline
+CONCEPTS: cpu architecture, instruction cycle, fetch-decode-execute, program counter, instruction register, alu, ram, memory addressing, register transfer
+VISUAL_ELEMENTS: Rectangle, RegularPolygon, Triangle, Arrow, Line, Group, Transform, Indicate, Create, Write
+DIFFICULTY: intermediate
+"""
 class CPUFetchStore(Scene):
     def construct(self):
         # --- TITLE ---

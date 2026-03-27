@@ -1,5 +1,11 @@
 from manim import *
 
+"""
+TITLE: Fibonacci Sequence — Dynamic Programming with Memoization
+CONCEPTS: fibonacci sequence, memoization, dynamic programming, recursion tree, top-down approach, redundancy, time-space tradeoff, pruning, complexity reduction
+VISUAL_ELEMENTS: Circle, Line, Text, Square, Group, Arrow, Cross, FadeIn, Create, Transform, Indicate, set_fill
+DIFFICULTY: intermediate
+"""
 
 class FibonacciCleanLayout(Scene):
     def construct(self):

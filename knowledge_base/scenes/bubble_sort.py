@@ -1,5 +1,10 @@
 from manim import *
-
+"""
+TITLE: Bubble Sort — Adjacent Swap with Comparison Counter
+CONCEPTS: bubble sort, brute-force, adjacent comparison, element swapping, nested loops, outer pass, inner pass, quadratic time complexity
+VISUAL_ELEMENTS: Square, Text, Arrow, Line, SurroundingRectangle, VGroup, Transform, Indicate, ReplacementTransform, MathTex
+DIFFICULTY: beginner
+"""
 class BubbleSortVisualizer(Scene):
     def construct(self):
         # ==========================================

@@ -1,5 +1,10 @@
 from manim import *
-
+"""
+TITLE: P vs NP Complexity — The Hierarchy of Computational Difficulty
+CONCEPTS: p vs np, computational complexity, polynomial time, np-complete, np-hard, euler diagram, reduction, millennium prize
+VISUAL_ELEMENTS: Circle, Intersection, Rectangle, Text, VGroup, Create, Indicate, Transform, set_color, Write
+DIFFICULTY: advanced
+"""
 
 class PVP_NP_Complexity(Scene):
     def construct(self):
