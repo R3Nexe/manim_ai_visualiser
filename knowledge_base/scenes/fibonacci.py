@@ -5,6 +5,7 @@ TITLE: Fibonacci Sequence — Dynamic Programming with Memoization
 CONCEPTS: fibonacci sequence, memoization, dynamic programming, recursion tree, top-down approach, redundancy, time-space tradeoff, pruning, complexity reduction
 VISUAL_ELEMENTS: Circle, Line, Text, Square, Group, Arrow, Cross, FadeIn, Create, Transform, Indicate, set_fill
 DIFFICULTY: intermediate
+DESCRIPTION: Manim animation for Fibonacci with Memoization. Visualizes a top-down recursion tree (nodes and edges) alongside an active cache array to demonstrate redundancy pruning, cache hits, and O(N) dynamic programming optimization.
 """
 
 class FibonacciCleanLayout(Scene):

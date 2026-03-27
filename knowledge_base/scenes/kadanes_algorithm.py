@@ -4,6 +4,7 @@ TITLE: Kadane's Algorithm — Maximum Subarray Sum (Linear Pass)
 CONCEPTS: kadane's algorithm, dynamic programming, maximum subarray, sliding window, contiguous subarray, global maximum, local maximum, time complexity
 VISUAL_ELEMENTS: Square, Text, Arrow, Line, SurroundingRectangle, VGroup, ReplacementTransform, Indicate, MathTex, Code
 DIFFICULTY: intermediate
+DESCRIPTION: Manim animation for Kadane's Algorithm. Uses the 5-scene split-screen UI to visualize a 1D array linear pass, dynamically tracking local curSum and global maxSum to find the maximum contiguous subarray in optimal O(N) time.
 """
 class KadanesAlgorithm(Scene):
     def construct(self):
