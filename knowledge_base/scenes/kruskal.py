@@ -1,5 +1,10 @@
 from manim import *
-
+"""
+TITLE: Kruskal's Algorithm — Minimum Spanning Tree with Union-Find
+CONCEPTS: kruskal's algorithm, minimum spanning tree (mst), greedy algorithm, union-find, cycle detection, edge sorting, graph theory, disjoint set union
+VISUAL_ELEMENTS: Dot, Line, Text, Rectangle, RoundedRectangle, Group, Indicate, Transform, set_stroke, Write
+DIFFICULTY: advanced
+"""
 
 class KruskalThreeZone(Scene):
     def construct(self):

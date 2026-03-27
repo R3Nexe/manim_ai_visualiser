@@ -1,4 +1,10 @@
 from manim import *
+"""
+TITLE: API Gateway — Circuit Breaker Pattern Lifecycle
+CONCEPTS: circuit breaker pattern, api gateway, fault tolerance, fallback mechanism, closed/open/half-open states, request lifecycle, service mesh, distributed systems
+VISUAL_ELEMENTS: RegularPolygon, RoundedRectangle, Dot, Cross, Flash, Indicate, animate.move_to, set_stroke, FadeIn, Write
+DIFFICULTY: intermediate
+"""
 
 
 class APIGatewayLifecycle(Scene):

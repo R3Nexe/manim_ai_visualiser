@@ -1,6 +1,13 @@
 from manim import *
 
 
+"""
+TITLE: Merge Sort — Divide and Conquer Recursive Splitting
+CONCEPTS: merge sort, divide and conquer, recursion, recursive splitting, subarray merging, mid pointer, time complexity, space complexity
+VISUAL_ELEMENTS: Square, Text, VGroup, Rectangle, Line, Transform, FadeIn, Write, Indicate, animate.shift
+DIFFICULTY: advanced
+"""
+
 class AnimationScene(Scene):
     def construct(self):
         # --- INTRO SCENE ---

@@ -1,5 +1,10 @@
 from manim import *
-
+"""
+TITLE: Moore's Voting Algorithm — Majority Element Selection
+CONCEPTS: moore's voting algorithm, majority element, boyer-moore, linear time search, stream processing, frequency cancellation, constant space complexity, array iteration
+VISUAL_ELEMENTS: Square, Arrow, Text, SurroundingRectangle, Line, VGroup, Transform, Indicate, ReplacementTransform, MathTex
+DIFFICULTY: intermediate
+"""
 class MooresVotingVisualizer(Scene):
     def construct(self):
         # ==========================================

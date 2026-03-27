@@ -1,5 +1,11 @@
 from manim import *
 
+"""
+TITLE: API Gateway Architecture — Centralized Routing and Middleware
+CONCEPTS: api gateway, microservices architecture, centralized entry point, authentication, rate limiting, request routing, service abstraction, request-response lifecycle
+VISUAL_ELEMENTS: RegularPolygon, RoundedRectangle, VGroup, Dot, Indicate, FadeIn, Write, Create, animate.move_to, arrange
+DIFFICULTY: intermediate
+"""
 
 class APIGatewayLogic(Scene):
     def construct(self):

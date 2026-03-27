@@ -56,6 +56,7 @@ def generate_manim_script(scene_plan: str, kb_context: str = "") -> str:
         })
 
     print(f"[coder] failed after {MAX_TRIES} attempts")
+    return
 
 
 def _scene_plan_to_prompt(scene_plan: list[dict], kb_context: str = "") -> str:

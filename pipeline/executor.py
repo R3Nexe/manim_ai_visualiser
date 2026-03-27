@@ -29,7 +29,7 @@ MAX_RENDER_TRIES = 3
 USE_KB = os.getenv("USE_KNOWLEDGE_BASE", "false").lower() == "true"
 
 
-def run(user_prompt: str) -> str:
+def run(user_prompt: str,quality_flag:str="-ql") -> str:
     """
     Execute the full pipeline for a given user prompt.
 
@@ -116,8 +116,7 @@ def run(user_prompt: str) -> str:
 
     for render_attempt in range(1, MAX_RENDER_TRIES + 1):
         print(f"[pipeline] Render attempt {render_attempt}/{MAX_RENDER_TRIES}")
-        video_path, stderr = _render(script_path, session_dir)
-
+        video_path, stderr = _render(script_path, session_dir, quality_flag)
         if video_path:
             break
 
@@ -142,19 +141,18 @@ def run(user_prompt: str) -> str:
     return str(final_path)
 
 
-def _render(script_path: Path, session_dir: Path) -> tuple[Path | None, str]:
-    """
-    Invoke the manim CLI to render AnimationScene from script_path.
-    Returns (video_path, stderr): video_path is None on failure, stderr always set.
-    """
+def _render(
+    script_path: Path,
+    session_dir: Path,
+    quality_flag: str = "-ql",
+) -> tuple[Path | None, str]:
     media_dir = session_dir / "media"
     cmd = [
         sys.executable, "-m", "manim",
         "render",
         "--media_dir", str(media_dir),
-        "-ql",          # 480p15 — swap for -qh (1080p60) in production
+        quality_flag,   # set from settings: -ql / -qm / -qh
         str(script_path),
-        "AnimationScene",
     ]
     print(f"[render] Running: {' '.join(cmd)}")
 
@@ -172,12 +170,8 @@ def _render(script_path: Path, session_dir: Path) -> tuple[Path | None, str]:
         print(f"[render] STDERR:\n{result.stderr}")
         return None, result.stderr
 
-    # Manim writes to: media/videos/<script_stem>/<quality>/AnimationScene.mp4
-    candidates = list((media_dir / "videos" / script_path.stem).rglob("AnimationScene.mp4"))
-    if candidates:
-        return candidates[0], ""
-
-    candidates = list(media_dir.rglob("AnimationScene.mp4"))
+    # Manim writes to: media/videos/<script_stem>/<quality>/<ClassName>.mp4
+    candidates = list(media_dir.rglob("*.mp4"))
     if candidates:
         return candidates[0], ""
 
