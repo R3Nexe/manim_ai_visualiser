@@ -4,6 +4,7 @@ TITLE: Bubble Sort — Adjacent Swap with Comparison Counter
 CONCEPTS: bubble sort, brute-force, adjacent comparison, element swapping, nested loops, outer pass, inner pass, quadratic time complexity
 VISUAL_ELEMENTS: Square, Text, Arrow, Line, SurroundingRectangle, VGroup, Transform, Indicate, ReplacementTransform, MathTex
 DIFFICULTY: beginner
+DESCRIPTION: Manim animation for Bubble Sort. Uses the strict 5-scene split-screen UI with a 1D array to visualize adjacent element comparisons, swapping operations, and nested loop variable tracking for O(N^2) brute-force sorting.
 """
 class BubbleSortVisualizer(Scene):
     def construct(self):

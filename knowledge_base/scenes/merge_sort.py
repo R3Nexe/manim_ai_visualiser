@@ -6,6 +6,7 @@ TITLE: Merge Sort — Divide and Conquer Recursive Splitting
 CONCEPTS: merge sort, divide and conquer, recursion, recursive splitting, subarray merging, mid pointer, time complexity, space complexity
 VISUAL_ELEMENTS: Square, Text, VGroup, Rectangle, Line, Transform, FadeIn, Write, Indicate, animate.shift
 DIFFICULTY: advanced
+DESCRIPTION: Manim animation for Merge Sort. Visualizes divide-and-conquer recursive splitting and subarray merging by physically separating and reordering 1D array blocks to demonstrate O(n log n) time and O(n) space complexity.
 """
 
 class AnimationScene(Scene):

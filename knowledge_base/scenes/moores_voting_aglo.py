@@ -4,6 +4,7 @@ TITLE: Moore's Voting Algorithm — Majority Element Selection
 CONCEPTS: moore's voting algorithm, majority element, boyer-moore, linear time search, stream processing, frequency cancellation, constant space complexity, array iteration
 VISUAL_ELEMENTS: Square, Arrow, Text, SurroundingRectangle, Line, VGroup, Transform, Indicate, ReplacementTransform, MathTex
 DIFFICULTY: intermediate
+DESCRIPTION: Manim animation for Moore's Voting Algorithm (Boyer-Moore). Uses the 5-scene split-screen UI to demonstrate O(N) linear time and O(1) space majority element selection through active candidate tracking and frequency cancellation.
 """
 class MooresVotingVisualizer(Scene):
     def construct(self):

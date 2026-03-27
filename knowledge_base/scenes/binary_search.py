@@ -4,6 +4,7 @@ TITLE: Binary Search — Logarithmic Narrowing with Code Execution Trace
 CONCEPTS: binary search, divide and conquer, sorted array, search space, mid pointer, time complexity, logarithmic efficiency, index comparison
 VISUAL_ELEMENTS: Square, Arrow, Text, Code, SurroundingRectangle, Line, VGroup, ReplacementTransform, Indicate, MathTex
 DIFFICULTY: intermediate
+DESCRIPTION: Manim animation for Binary Search. Features a 3-zone split-screen UI, 1D array half-dimming, dynamic execution state panel, and mid-pointer tracking to demonstrate O(log n) logarithmic narrowing and divide-and-conquer logic.
 """
 from manim import *
 
