@@ -22,7 +22,7 @@ load_dotenv()
 # Default similarity threshold.
 # Scores below this are considered noise and excluded from the prompt.
 # Tune by running: SELECT title, 1-(embedding<=>query) FROM manim_examples ORDER BY 2 DESC
-DEFAULT_THRESHOLD: float = 0.30
+DEFAULT_THRESHOLD: float = 0.4
 DEFAULT_TOP_K: int = 3
 
 

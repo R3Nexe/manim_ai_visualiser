@@ -26,10 +26,7 @@ def expand_prompt(user_prompt: str, kb_context: str = ""):
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",   "content": user_content},
     ]
-    content, elapsed = call_llm(
-        messages=messages,
-        temperature=0.2,
-    )
+    content, elapsed = call_llm(messages, temperature=0.2)
 
     data=content.lstrip("```json").rstrip("```")
 

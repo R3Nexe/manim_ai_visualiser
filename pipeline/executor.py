@@ -29,7 +29,8 @@ MAX_RENDER_TRIES = 3
 USE_KB = os.getenv("USE_KNOWLEDGE_BASE", "false").lower() == "true"
 
 
-def run(user_prompt: str,quality_flag:str="-ql") -> str:
+def run(user_prompt: str, quality_flag: str = "-ql",
+        provider: str | None = None, model: str | None = None) -> str:
     """
     Execute the full pipeline for a given user prompt.
 
@@ -40,8 +41,20 @@ def run(user_prompt: str,quality_flag:str="-ql") -> str:
         3. Manim Render    — script → .mp4 via manim CLI (self-healing)
         4. Move            — copy final render to outputs/video/
 
+    Args:
+        provider: Override LLM_PROVIDER env var (local | openai | anthropic | gemini)
+        model:    Override LLM_MODEL env var (e.g. gpt-4o, claude-sonnet-4-6)
+
     Returns the path to the final .mp4, or an empty string on failure.
     """
+    if provider:
+        os.environ["LLM_PROVIDER"] = provider
+    if model:
+        os.environ["LLM_MODEL"] = model
+
+    active_provider = os.getenv("LLM_PROVIDER", "local")
+    active_model    = os.getenv("LLM_MODEL", "(provider default)")
+
     session_id  = f"{int(time.time())}_{uuid.uuid4().hex[:6]}"
     session_dir = OUTPUTS / session_id
 
@@ -49,8 +62,9 @@ def run(user_prompt: str,quality_flag:str="-ql") -> str:
         d.mkdir(parents=True, exist_ok=True)
 
     print(f"\n{'='*60}")
-    print(f"[pipeline] Session: {session_id}")
-    print(f"[pipeline] Prompt:  {user_prompt}")
+    print(f"[pipeline] Session:  {session_id}")
+    print(f"[pipeline] Prompt:   {user_prompt}")
+    print(f"[pipeline] Provider: {active_provider}  Model: {active_model}")
     print(f"{'='*60}")
 
     # ------------------------------------------------------------------
@@ -181,8 +195,20 @@ def _render(
 
 
 if __name__ == "__main__":
-    prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "explain binary search"
-    path = run(prompt)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Manim AI Visualiser pipeline")
+    parser.add_argument("prompt", nargs="*", help="Description of the concept to visualise")
+    parser.add_argument("--provider", choices=["local", "openai", "anthropic", "gemini"],
+                        default=None, help="LLM provider (overrides LLM_PROVIDER env var)")
+    parser.add_argument("--model", default=None,
+                        help="Model name (overrides LLM_MODEL env var and provider default)")
+    parser.add_argument("--quality", default="-ql", choices=["-ql", "-qm", "-qh"],
+                        help="Render quality: -ql low (default), -qm medium, -qh high")
+    args = parser.parse_args()
+
+    prompt = " ".join(args.prompt) if args.prompt else "explain binary search"
+    path = run(prompt, quality_flag=args.quality, provider=args.provider, model=args.model)
     if path:
         print(f"\nSuccess: {path}")
     else:
