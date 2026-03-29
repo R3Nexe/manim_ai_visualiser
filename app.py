@@ -5,7 +5,7 @@ import os
 import sys
 import threading
 from pathlib import Path
-
+from streamlit_ace import st_ace
 import streamlit as st
 
 ROOT = Path(__file__).parent
@@ -191,13 +191,7 @@ if has_video and col_main is not None:
             st.caption("## Video Generated",text_alignment="center")
 
         with tab_code:
-            st.markdown("Edit the generated Manim script and re-render.")
-            edited_code = st.text_area(
-                "Manim Script",
-                value=st.session_state.current_code,
-                height=520,
-                label_visibility="collapsed",
-            )
+            edited_code=st_ace(value=st.session_state.current_code,language="python",theme="tomorrow_night")
 
             rerender_col, status_col = st.columns([2, 5])
             with rerender_col:
