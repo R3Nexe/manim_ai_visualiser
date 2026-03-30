@@ -1,167 +1,86 @@
 # Manim AI Visualiser
 
-AI-powered tool that generates Manim animations for DSA concepts.
+A multi-agent pipeline that converts natural language descriptions of algorithms and data structures into animated Manim visualizations.
+
+**Input:** A text prompt describing a DSA concept
+**Output:** A rendered `.mp4` animation
 
 ---
 
-## Table of Contents
-1. [Setup](#1-setup)
-2. [Cloning the Repo](#2-cloning-the-repo)
-3. [Your Branch](#3-your-branch)
-4. [Making Changes](#4-making-changes)
-5. [Pushing Your Work](#5-pushing-your-work)
-6. [Golden Rules](#6-golden-rules)
+## How It Works
+
+```
+User Prompt
+  → [1] Prompt Expander    — LLM call → structured scene plan (JSON)
+  → [2] Manim Coder        — LLM call → Manim Python script (with self-healing)
+  → [3] Render             — Manim CLI renders script to .mp4
+  → [4] Finalize           — Output moved to outputs/video/
+```
+
+All four stages are orchestrated by `pipeline/executor.py`. Each stage writes its intermediate output to `outputs/raw_responses/` for debugging.
 
 ---
 
-## 1. Setup
+## Setup
 
-Make sure you have these installed before starting:
-
-- [Git](https://git-scm.com/downloads)
-- [Python 3.10+](https://www.python.org/downloads/)
-
-Then install project dependencies:
+### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Copy the environment variables file and fill in your values:
+### 2. Configure environment
 
-```bash
-cp .env.example .env
+Create a `.env` file in the project root:
+
+```env
+LLM_PROVIDER=local
+LOCAL_LLM_URL=http://127.0.0.1:1234/v1/chat/completions
 ```
 
-> Never share or commit your `.env` file. It is already gitignored.
+For cloud providers, add the relevant key:
 
----
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=...
 
-## 2. Cloning the Repo
+# or
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=...
 
-Run this once on your machine to download the project:
-
-```bash
-git clone <repo-url>
-cd manim_ai_visualiser
+# or
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=...
 ```
 
----
+### 3. (Optional) Enable knowledge base
 
-## 3. Your Branch
+To enable RAG-based example retrieval, add Supabase credentials and set `USE_KB=true`:
 
-Each person works on their own branch. **Do not work on `main`.**
-
-| Person | Branch |
-|--------|------------------|
-| Person 1 (Knowledge Base) | `feature/KB` |
-| Person 2 (AI Agents) | `feature/ai` |
-| Person 3 & 4 (Streamlit UI) | `feature/streamlit` |
-
-After cloning, switch to your branch:
-
-```bash
-git checkout feature/your-branch-name
+```env
+SUPABASE_URL=https://<project>.supabase.co
+SUPABASE_KEY=<anon-key>
+USE_KB=true
 ```
 
-Example:
+Then run the embedding script to populate the vector store:
 
 ```bash
-git checkout feature/KB
+python knowledge_base/embeddings/embed.py
 ```
 
-To confirm which branch you are on:
+### 4. Run
 
+**CLI:**
 ```bash
-git branch
+python -m pipeline.executor "explain bubble sort"
+python -m pipeline.executor "explain Dijkstra's algorithm" --provider anthropic --quality m
 ```
 
-The branch with a `*` next to it is your current one.
-
----
-
-## 4. Making Changes
-
-**Always follow this order before you start working:**
-
-### Step 1 — Pull the latest changes
-
-This keeps your branch up to date:
-
+**Web UI (Streamlit):**
 ```bash
-git pull origin feature/your-branch-name
+streamlit run app.py
 ```
-
-### Step 2 — Make your changes
-
-Edit your files as needed in your code editor.
-
-### Step 3 — Check what you changed
-
-```bash
-git status
-```
-
-This shows which files have been modified.
-
-### Step 4 — Stage your changes
-
-To stage specific files (recommended):
-
-```bash
-git add filename.py
-```
-
-Or to stage everything you changed:
-
-```bash
-git add .
-```
-
-### Step 5 — Commit with a clear message
-
-```bash
-git commit -m "short description of what you did"
-```
-
-Good commit message examples:
-- `"add binary search scene to knowledge base"`
-- `"fix retriever returning wrong results"`
-- `"implement scene plan table in UI"`
-
-Bad commit message examples:
-- `"changes"`
-- `"fix"`
-- `"asdfgh"`
-
----
-
-## 5. Pushing Your Work
-
-Once you have committed, push to **your branch only**:
-
-```bash
-git push origin feature/your-branch-name
-```
-
-Example:
-
-```bash
-git push origin feature/KB
-```
-
-> If this is your first push on a branch, git may ask you to set an upstream. Just run the command it suggests — it usually looks like `git push --set-upstream origin feature/your-branch-name`.
-
----
-
-## 6. Golden Rules
-
-- **Never push to `main`** — main is protected and is merged into by the team lead only
-- **Never work on someone else's branch** without telling them first
-- **Pull before you start working** every single time — this prevents conflicts
-- **Commit often** — small focused commits are easier to review and undo than one large one
-- **Never commit your `.env` file** — it contains secrets that must stay local
-- **Write clear commit messages** — your teammates need to understand what you did
 
 ---
 
@@ -169,28 +88,174 @@ git push origin feature/KB
 
 ```
 manim_ai_visualiser/
-├── app.py                        # Streamlit UI entry point
-├── config.py                     # Environment variables & constants
-├── requirements.txt              # Python dependencies
-├── .env.example                  # Template for your .env file
+├── app.py                              # Streamlit web interface
+├── requirements.txt
 ├── agents/
-│   ├── prompt_expander.py        # AI 1: generates scene plan JSON
-│   ├── manim_coder.py            # AI 2: generates Manim code per scene
+│   ├── llm_client.py                   # Unified LLM call entry point
+│   ├── prompt_expander.py              # Stage 1: prompt → scene plan
+│   ├── manim_coder.py                  # Stage 2: scene plan → Manim script
 │   └── prompts/
-│       ├── expander_system.txt   # System prompt for AI 1
-│       └── coder_system.txt      # System prompt for AI 2
-├── knowledge_base/
-│   ├── retriever.py              # RAG: fetches relevant scenes
-│   ├── embeddings/
-│   │   ├── schema.sql            # Supabase pgvector table setup
-│   │   └── embed.py              # One-time script to embed scenes
-│   ├── problems/                 # Python DSA solutions
-│   └── scenes/                   # Paired Manim scene files
+│       ├── expander_system.txt         # System prompt for scene planner
+│       └── coder_system.txt            # System prompt for Manim coder
 ├── pipeline/
-│   ├── executor.py               # Runs manim render via subprocess
-│   ├── stitcher.py               # FFmpeg concat to final.mp4
-│   └── session.py                # Orchestrates the full pipeline
-├── ui/
-│   └── components.py             # Reusable Streamlit components
-└── outputs/                      # Generated video clips (gitignored)
+│   └── executor.py                     # Pipeline orchestrator + Manim render wrapper
+├── knowledge_base/
+│   ├── retriever.py                    # Supabase vector search with local fallback
+│   ├── components/                     # Reusable Manim building blocks
+│   │   ├── linear_data.py              # Arrays, linked lists, stacks, queues
+│   │   ├── key-value_pairs.py          # Hash tables, dictionaries
+│   │   ├── matrices.py                 # 2D grid visuals
+│   │   ├── pointers.py                 # Pointer and reference animations
+│   │   └── sets.py                     # Set operation visuals
+│   ├── scenes/                         # Example scenes used for RAG retrieval
+│   │   ├── binary_search.py
+│   │   ├── bubble_sort.py
+│   │   ├── merge_sort.py
+│   │   ├── fibonacci.py
+│   │   ├── kadanes_algorithm.py
+│   │   ├── kruskal.py
+│   │   └── ...
+│   └── embeddings/
+│       ├── embed.py                    # Embedding generation + Supabase upsert
+│       └── schema.sql                  # Supabase vector table + RPC function
+└── ui/
+    └── components.py                   # Streamlit component library (stub)
+```
+
+---
+
+## Architecture
+![img.png](img.png)
+### LLM Client (`agents/llm_client.py`)
+
+Single entry point for all LLM calls: `call_llm(messages, temperature) → (content, elapsed_seconds)`.
+
+Provider routing is controlled by the `LLM_PROVIDER` environment variable:
+
+| Provider | Routing |
+|----------|---------|
+| `local` | OpenAI-compatible HTTP to `LOCAL_LLM_URL` (LM Studio / Ollama) |
+| `openai` | OpenAI API via `openai` SDK |
+| `anthropic` | Anthropic Messages API — system prompt extracted from `messages[]` automatically |
+| `gemini` | Google Gemini SDK — system instruction passed via `GenerateContentConfig` |
+
+All agents call only `call_llm()` and are unaware of the active provider. Model can be overridden per-provider via environment variables.
+
+---
+
+### Stage 1 — Prompt Expander (`agents/prompt_expander.py`)
+
+- **Input:** Plain-text user prompt
+- **Output:** JSON scene plan string
+- **Temperature:** 0.2
+- **System prompt:** `agents/prompts/expander_system.txt`
+
+The expander instructs the LLM to produce a structured scene plan describing animation layout, visual zones, code snippets, variable traces, and narration for each scene. Two layout modes are supported:
+
+- **3-Zone** (default for DSA): left panel for the main visual, top-right for code/logic steps, bottom-right for variable trace table
+- **Full-Screen**: used for conceptual or intro/outro scenes
+
+---
+
+### Stage 2 — Manim Coder (`agents/manim_coder.py`)
+
+- **Input:** Scene plan JSON string
+- **Output:** Manim Python script
+- **Temperature:** 0.2
+- **System prompt:** `agents/prompts/coder_system.txt`
+- **Self-healing:** Up to 3 retries on `py_compile` failure, with the error traceback appended to the message history for the LLM to fix
+
+Key functions:
+
+| Function | Purpose |
+|----------|---------|
+| `generate_manim_script(scene_plan)` | Main entry point — generates and validates a script |
+| `fix_manim_script(scene_plan, code, stderr)` | Runtime error recovery — patches a previously generated script |
+| `_extract_code(raw)` | Strips markdown fences from LLM response |
+| `_validate_code(code)` | Syntax check via `py_compile` in a temp file |
+
+---
+
+### Stage 3 — Render (`pipeline/executor.py`)
+
+The executor invokes the Manim CLI directly:
+
+```bash
+python -m manim render --media_dir <path> <quality_flag> <script_path>
+```
+
+On render failure, the stderr is passed to `fix_manim_script()` and the fixed script is re-rendered (up to 3 attempts). Intermediate fixes are saved to `raw_responses/` for traceability.
+
+Quality flags map to Manim's built-in presets: `-ql` (480p), `-qm` (720p), `-qh` (1080p).
+
+---
+
+### Knowledge Base (`knowledge_base/`)
+
+Optional RAG context injected into both the expander and coder prompts.
+
+**Retrieval strategy (`retriever.py`):**
+
+1. **Supabase (primary):** pgvector cosine similarity search via `match_manim_examples()` RPC
+2. **Local fallback:** In-process `sentence-transformers` embeddings with numpy cosine similarity over all `knowledge_base/scenes/*.py` files — no external dependency required
+
+**Embedding pipeline (`embeddings/embed.py`):**
+
+- Model: `sentence-transformers/all-MiniLM-L6-v2` (384-dimensional embeddings)
+- Embeddings are generated from scene metadata (title, description, concepts) — not raw code
+- Results are upserted to Supabase with `source_file` as the unique key, making re-runs idempotent
+
+---
+
+### Web UI (`app.py`)
+
+A Streamlit interface providing:
+
+- Provider and model selection (local / OpenAI / Anthropic / Gemini)
+- Render quality selector
+- Chat-style prompt input
+- Video playback panel
+- Code editor tab (`streamlit_ace`) with re-render support
+
+---
+
+## Key Design Decisions
+
+- **Provider-agnostic agents** — all LLM calls go through `call_llm()`. Switching providers requires only a change to `LLM_PROVIDER` in `.env`.
+- **Self-healing code generation** — both the coder and the executor implement independent retry loops with LLM feedback, covering syntax errors (pre-render) and runtime errors (post-render) separately.
+- **RAG-optional pipeline** — the full pipeline runs without Supabase. The local fallback makes knowledge base retrieval available with no infrastructure beyond `pip install`.
+- **No LaTeX** — all scenes use `Text()` only. Hard constraint enforced in both system prompts due to Manim rendering compatibility.
+- **Canvas zone enforcement** — the expander system prompt defines strict x/y coordinate targets for each visual zone, reducing overlap in generated scenes.
+
+---
+
+## Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `manim>=0.18.0` | Animation engine |
+| `openai>=1.30.0` | LLM client (OpenAI and OpenAI-compatible endpoints) |
+| `anthropic` | Anthropic Messages API client |
+| `google-genai` | Google Gemini API client |
+| `requests` | Fallback HTTP for local LLM calls |
+| `python-dotenv>=1.0.0` | `.env` loading |
+| `streamlit>=1.35.0` | Web UI |
+| `sentence-transformers>=3.0.0` | Local embeddings for knowledge base retrieval |
+| `supabase>=2.4.0` | Vector store (pgvector) |
+
+---
+
+## Output Layout
+
+```
+outputs/
+  <session_id>/
+    animation.py                        # Generated Manim script
+    media/videos/<script>/<quality>/    # Manim render artifacts
+  raw_responses/
+    <session_id>_expander.json          # Scene plan from Stage 1
+    <session_id>_coder.py               # Initial generated script
+    <session_id>_coder_fix1.py          # Self-healing fix attempts (if any)
+  video/
+    final_<session_id>.mp4              # Final rendered video
 ```

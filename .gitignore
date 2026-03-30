@@ -9,3 +9,7 @@ __init__.py
 
 *.cpython-*.pyc
 **/__pycache__/
+.claude
+CLAUDE.md
+test_retriever.py
+manim_test.py
