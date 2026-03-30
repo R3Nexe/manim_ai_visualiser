@@ -1,4 +1,6 @@
 # Manim AI Visualiser
+## [Live Demo](https://algoviz.streamlit.app/)
+
 
 A multi-agent pipeline that converts natural language descriptions of algorithms and data structures into animated Manim visualizations.
 
