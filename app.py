@@ -4,6 +4,7 @@ app.py — Streamlit UI for Manim AI Visualiser
 import os
 import sys
 import threading
+import datetime
 from pathlib import Path
 from streamlit_ace import st_ace
 import streamlit as st
@@ -11,7 +12,6 @@ import streamlit as st
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
-# ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
 st.set_page_config(
@@ -21,7 +21,48 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Custom CSS
 # ---------------------------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    /* Main Background Gradient (Dark Navy to Charcoal) */
+    .stApp {
+        background: linear-gradient(135deg, #0b132b 0%, #36454F 100%) !important;
+    }
+
+    /* Sidebar Glassmorphism */
+    [data-testid="stSidebar"] {
+        background-color: rgba(11, 19, 43, 0.4) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Global Text Color Adjustment */
+    .stApp, .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, .stApp span, .stApp label {
+        color: #f0f4f8 !important;
+    }
+
+    /* Divider Lines */
+    hr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Chat Messages Glassmorphism */
+    .stChatMessage {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Session state defaults
 # ---------------------------------------------------------------------------
 defaults = {
@@ -32,14 +73,14 @@ defaults = {
     "session_dir": None,      # session output dir
     "pipeline_running": False,
     "pipeline_error": None,
+    "pipeline_logs": "",      # captured stdout from last pipeline run
+    "search_history": [],     # list of dicts: [{"date": str, "prompt": str}]
 }
 for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
-
-# ---------------------------------------------------------------------------
-# Sidebar — Settings
+# Sidebar — Settings & History
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.title("Settings")
@@ -94,11 +135,21 @@ with st.sidebar:
         "High":       "-qh",
     }[quality]
 
+    st.divider()
 
+    # --- History Option ---
+    st.subheader("Search History")
+    if not st.session_state.search_history:
+        st.markdown("*(No Search History)*")
+    else:
+        for item in reversed(st.session_state.search_history):  # Show newest first
+            st.caption(f"**{item['date']}**")
+            st.text(f"{item['prompt'][:50]}{'...' if len(item['prompt']) > 50 else ''}")
 
+        if st.button("Clear History", use_container_width=True):
+            st.session_state.search_history = []
+            st.rerun()
 
-
-# ---------------------------------------------------------------------------
 # Helper — push API keys into env before running pipeline
 # ---------------------------------------------------------------------------
 def _apply_env_settings():
@@ -118,25 +169,36 @@ def _apply_env_settings():
         os.environ["LOCAL_LLM_URL"] = local_url
 
 
-# ---------------------------------------------------------------------------
 # Helper — run pipeline (blocking, called inside st.spinner)
 # ---------------------------------------------------------------------------
 def _run_pipeline(prompt: str) -> tuple[str, str, str]:
     """
     Returns (video_path, script_content, script_path_str).
+    Captures all pipeline stdout into st.session_state.pipeline_logs.
     Raises on failure.
     """
+    import io
+    from contextlib import redirect_stdout, redirect_stderr
+
     _apply_env_settings()
     from pipeline.executor import run, OUTPUTS, RAW_DIR
 
-    video_path = run(prompt, quality_flag=quality_flag, provider=provider,
-                     model=model or None)
-    if not video_path:
-        raise RuntimeError("Pipeline returned no video. Check logs for details.")
+    log_buffer = io.StringIO()
+    try:
+        with redirect_stdout(log_buffer), redirect_stderr(log_buffer):
+            video_path = run(prompt, quality_flag=quality_flag, provider=provider,
+                             model=model or None)
+    except Exception as exc:
+        st.session_state.pipeline_logs = log_buffer.getvalue()
+        raise RuntimeError(str(exc))
+    finally:
+        # Always persist whatever was captured so far
+        st.session_state.pipeline_logs = log_buffer.getvalue()
 
-    # Locate the script that was used: outputs/<session_id>/animation.py
-    # The session id is embedded in the video filename: final_<session_id>.mp4
-    video_stem = Path(video_path).stem          # e.g. final_1711700000_abc123
+    if not video_path:
+        raise RuntimeError("Pipeline returned no video.")
+
+    video_stem = Path(video_path).stem
     session_id = video_stem.replace("final_", "", 1)
     session_dir = OUTPUTS / session_id
     script_path = session_dir / "animation.py"
@@ -144,8 +206,6 @@ def _run_pipeline(prompt: str) -> tuple[str, str, str]:
     code = script_path.read_text() if script_path.exists() else ""
     return video_path, code, str(script_path)
 
-
-# ---------------------------------------------------------------------------
 # Helper — re-render existing (possibly edited) script
 # ---------------------------------------------------------------------------
 def _rerender(script_path: str, code: str) -> tuple[str, str]:
@@ -168,15 +228,12 @@ def _rerender(script_path: str, code: str) -> tuple[str, str]:
     video_path.rename(final_path)
     return str(final_path), ""
 
-
-# ---------------------------------------------------------------------------
 # Layout — video panel (70%) + chat panel (30%), or full-width chat
 # ---------------------------------------------------------------------------
 has_video = bool(st.session_state.video_path)
 
 if has_video:
-    col_main, col_chat = st.columns([8, 2], gap="xsmall")
-
+    col_main, col_chat = st.columns([8, 2], gap="small")
 else:
     col_main = None
     col_chat = st.container(height="content")
@@ -188,15 +245,27 @@ if has_video and col_main is not None:
 
         with tab_video:
             st.video(st.session_state.video_path)
-            st.caption("## Video Generated",text_alignment="center")
+            st.caption("## Video Generated", text_alignment="center")
+
+            # --- Download Video Option ---
+            try:
+                with open(st.session_state.video_path, "rb") as vid_file:
+                    st.download_button(
+                        label="⬇️ Download Video",
+                        data=vid_file.read(),
+                        file_name=Path(st.session_state.video_path).name,
+                        mime="video/mp4",
+                        use_container_width=True
+                    )
+            except Exception as e:
+                st.error(f"Error loading video for download: {e}")
 
         with tab_code:
-            edited_code=st_ace(value=st.session_state.current_code,language="python",theme="tomorrow_night")
+            edited_code = st_ace(value=st.session_state.current_code, language="python", theme="tomorrow_night")
 
             rerender_col, status_col = st.columns([2, 5])
             with rerender_col:
-                rerender_btn = st.button("Re-render", type="primary",
-                                         use_container_width=True)
+                rerender_btn = st.button("Re-render", type="primary", use_container_width=True)
             with status_col:
                 rerender_status = st.empty()
 
@@ -232,12 +301,19 @@ with col_chat:
         if st.session_state.pipeline_error:
             with st.chat_message("assistant"):
                 st.error(st.session_state.pipeline_error)
+                if st.session_state.pipeline_logs:
+                    with st.expander("Pipeline logs"):
+                        st.code(st.session_state.pipeline_logs, language="text")
 
     # Chat input
     prompt_input = st.chat_input("Describe a concept to visualise…",
                                  disabled=st.session_state.pipeline_running)
 
     if prompt_input:
+        # Update search history with timestamp
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M %p")
+        st.session_state.search_history.append({"date": current_time, "prompt": prompt_input})
+
         st.session_state.pipeline_error = None
         st.session_state.messages.append({"role": "user", "content": prompt_input})
 
