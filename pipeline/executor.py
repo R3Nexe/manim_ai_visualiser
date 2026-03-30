@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ROOT      = Path(__file__).parent.parent
-OUTPUTS   = ROOT / "outputs"
+OUTPUTS   = Path("/tmp/manim_outputs")
 RAW_DIR   = OUTPUTS / "raw_responses"
 VIDEO_DIR = OUTPUTS / "video"
 
